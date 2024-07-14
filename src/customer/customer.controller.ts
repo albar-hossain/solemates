@@ -53,7 +53,14 @@ export class CustomerController {
 return this.customerService.getCustomer(myobj);
   }
 
-  @Get('/getAllCustomer')
+  @Put('updatecustomer/:id')
+  updateCustomer(@Body() myobj:CustomerUpdateDTO, @Param('id') id:number): object {
+    return this.customerService.updateCustomer(myobj,id)
+  }
+
+  //Database part
+
+  @Get('getAllCustomer')
   getAllCustomer(): Promise<CustomerProfile[]> {
     return this.customerService.getAllCustomer();
   }
@@ -65,16 +72,18 @@ return this.customerService.getCustomer(myobj);
     return this.customerService.addCustomer(myobj);
   }
 
-  @Get('/getCustomerByIdDB/:id')
+  @Get('getCustomerByIdDB/:id')
   getCustomerByIdDB(@Param('id', ParseIntPipe) id: number): Promise<CustomerProfile>
   {
     return this.customerService.getCustomerByIdDB(id);
   }
 
-  @Put('updatecustomer/:id')
-  updateCustomer(@Body() myobj:CustomerUpdateDTO, @Param('id') id:number): object {
-    return this.customerService.updateCustomer(myobj,id)
+  
+@Put('updateCustomerDB/:id')
+    async updateCustomerByIdDB(@Param('id') id: number, @Body() updateCustomerDB: CustomerProfile): Promise<CustomerProfile> {
+    return this.customerService.updateCustomerByIdDB(id, updateCustomerDB);
   }
+
 
 @Post('addimage')
 @UseInterceptors(FileInterceptor('myfile',

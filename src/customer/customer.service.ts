@@ -57,7 +57,12 @@ export class CustomerService {
     return this.customerRepo.findOneBy({ id: id });
   }
 
-  
+  async updateCustomerByIdDB(id: number, updateCustomer: CustomerProfile): Promise<CustomerProfile> {
+    await this.customerRepo.update(id, updateCustomer);
+    return this.customerRepo.findOneBy({ id: id });
+  }
+
+
     
     updateCustomer(myobj:object, id: number): object{
     return {message: "update customerid: "+id, body:myobj}
