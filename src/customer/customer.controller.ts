@@ -3,6 +3,7 @@ import { CustomerService } from './customer.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage, MulterError } from 'multer';
 import { CustomerDTO, CustomerUpdateDTO } from './dto/cutomer.dto';
+import { CustomerProfile } from './entities/customer.entity';
 
 @Controller('customer')
 export class CustomerController {
@@ -45,11 +46,16 @@ export class CustomerController {
   getCustomerByNameAndId(@Query('name') name: string, @Query('id') id: number): object {
     return this.customerService.getCustomerByNameAndId(name, id);
   }
-  
+
   @Get('getcustomer')
   getCustomer(@Body() myobj:object): object {
     console.log(myobj);
 return this.customerService.getCustomer(myobj);
+  }
+
+  @Get('/getAllCustomer')
+  getAllCustomer(): Promise<CustomerProfile[]> {
+    return this.customerService.getAllCustomer();
   }
 
   @Post('addcustomer')
@@ -57,6 +63,12 @@ return this.customerService.getCustomer(myobj);
   addCustomer(@Body() myobj:CustomerDTO): object {
     console.log(myobj);
     return this.customerService.addCustomer(myobj);
+  }
+
+  @Get('/getCustomerByIdDB/:id')
+  getCustomerByIdDB(@Param('id', ParseIntPipe) id: number): Promise<CustomerProfile>
+  {
+    return this.customerService.getCustomerByIdDB(id);
   }
 
   @Put('updatecustomer/:id')

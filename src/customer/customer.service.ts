@@ -43,10 +43,21 @@ export class CustomerService {
     }
     getCustomer(myobj:object): object{
     return myobj;
-    }
+  }
+  //Add new customer to DB
     addCustomer(myobj:CustomerDTO): Promise<CustomerProfile>{
     return this.customerRepo.save(myobj);
-    }
+  }
+  //Show all customer from DB NOT WORKING
+  getAllCustomer(): Promise<CustomerProfile[]> {
+    return this.customerRepo.find();
+  }
+
+  getCustomerByIdDB(id: number): Promise<CustomerProfile> {
+    return this.customerRepo.findOneBy({ id: id });
+  }
+
+  
     
     updateCustomer(myobj:object, id: number): object{
     return {message: "update customerid: "+id, body:myobj}
