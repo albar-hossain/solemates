@@ -1,7 +1,7 @@
-import { Entity, Column, PrimaryGeneratedColumn} from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, OneToMany} from 'typeorm';
 
 @Entity("customer")
-export class CustomerEntity{
+export class CustomerProfile{
     @PrimaryGeneratedColumn()
     id: number;
     @Column()
@@ -10,5 +10,9 @@ export class CustomerEntity{
     email: string;
     @Column()
     password: string;
+
+//     @OneToMany(() => Manager, manager => manager.customer)
+//  managers: Manager[];
+
 }
 
