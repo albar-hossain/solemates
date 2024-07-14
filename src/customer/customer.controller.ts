@@ -97,14 +97,14 @@ return this.customerService.getCustomer(myobj);
     if (file.originalname.match(/^.*\.(jpg|webp|png|jpeg)$/))
     cb(null, true);
     else {
-     cb(new MulterError('LIMIT_UNEXPECTED_FILE', 'image'), false);
-     }
+    cb(new MulterError('LIMIT_UNEXPECTED_FILE', 'image'), false);
+    }
     },
     limits: { fileSize: 30000 },
     storage:diskStorage({
     destination: './uploads',
     filename: function (req, file, cb) {
-     cb(null,Date.now()+file.originalname)
+    cb(null,Date.now()+file.originalname)
     },
     })
     }
@@ -116,12 +116,10 @@ console.log(myobj);
 return myobj;
 }
 
-
 @Get('/getimage/:name')
 getImage(@Param('name') filename:string, @Res() res) {
-
- res.sendFile(filename,{ root: './uploads' })
- }
+res.sendFile(filename,{ root: './uploads' })
+}
 
 
 
