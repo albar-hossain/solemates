@@ -62,6 +62,11 @@ export class CustomerService {
     return this.customerRepo.findOneBy({ id: id });
   }
 
+  async deleteCustomer(id: number): Promise<string> {
+    await this.customerRepo.delete(id);
+    return `Customer with ID ${id} deleted successfully`; 
+  }
+
 
     
     updateCustomer(myobj:object, id: number): object{

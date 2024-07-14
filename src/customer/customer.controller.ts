@@ -84,6 +84,12 @@ return this.customerService.getCustomer(myobj);
     return this.customerService.updateCustomerByIdDB(id, updateCustomerDB);
   }
 
+    
+  @Delete('deleteCustomer/:id')
+  async deleteCustomer(@Param('id') id: number): Promise<string> {
+    return this.customerService.deleteCustomer(id);
+  }
+
 
 @Post('addimage')
 @UseInterceptors(FileInterceptor('myfile',
