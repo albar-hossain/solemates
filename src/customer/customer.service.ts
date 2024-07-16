@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { CustomerProfile } from './entities/customer.entity'
+import { CustomerEntity } from './entities/customer.entity'
 import { CustomerDTO } from './dto/cutomer.dto';
 import { Repository } from 'typeorm';
 // import { Manager } from "../manager/manager.entity";
@@ -9,7 +9,7 @@ import { Repository } from 'typeorm';
 export class CustomerService {
 
   constructor(
-    @InjectRepository(CustomerProfile)  private customerRepo: Repository<CustomerProfile>,
+    @InjectRepository(CustomerEntity)  private customerRepo: Repository<CustomerEntity>,
     // @InjectRepository(Manager)  private managerRepo: Repository<Manager>
 ){}
 
@@ -45,19 +45,19 @@ export class CustomerService {
     return myobj;
   }
   //Add new customer to DB
-    addCustomer(myobj:CustomerDTO): Promise<CustomerProfile>{
+    addCustomer(myobj:CustomerDTO): Promise<CustomerEntity>{
     return this.customerRepo.save(myobj);
   }
   //Show all customer from DB NOT WORKING
-  getAllCustomer(): Promise<CustomerProfile[]> {
+  getAllCustomer(): Promise<CustomerEntity[]> {
     return this.customerRepo.find();
   }
 
-  getCustomerByIdDB(id: number): Promise<CustomerProfile> {
+  getCustomerByIdDB(id: number): Promise<CustomerEntity> {
     return this.customerRepo.findOneBy({ id: id });
   }
 
-  async updateCustomerByIdDB(id: number, updateCustomer: CustomerProfile): Promise<CustomerProfile> {
+  async updateCustomerByIdDB(id: number, updateCustomer: CustomerEntity): Promise<CustomerEntity> {
     await this.customerRepo.update(id, updateCustomer);
     return this.customerRepo.findOneBy({ id: id });
   }

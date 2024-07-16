@@ -3,7 +3,7 @@ import { CustomerService } from './customer.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage, MulterError } from 'multer';
 import { CustomerDTO, CustomerUpdateDTO } from './dto/cutomer.dto';
-import { CustomerProfile } from './entities/customer.entity';
+import { CustomerEntity } from './entities/customer.entity';
 
 @Controller('customer')
 export class CustomerController {
@@ -61,7 +61,7 @@ return this.customerService.getCustomer(myobj);
   //Database part
 
   @Get('getAllCustomer')
-  getAllCustomer(): Promise<CustomerProfile[]> {
+  getAllCustomer(): Promise<CustomerEntity[]> {
     return this.customerService.getAllCustomer();
   }
 
@@ -73,14 +73,14 @@ return this.customerService.getCustomer(myobj);
   }
 
   @Get('getCustomerByIdDB/:id')
-  getCustomerByIdDB(@Param('id', ParseIntPipe) id: number): Promise<CustomerProfile>
+  getCustomerByIdDB(@Param('id', ParseIntPipe) id: number): Promise<CustomerEntity>
   {
     return this.customerService.getCustomerByIdDB(id);
   }
 
   
 @Put('updateCustomerDB/:id')
-    async updateCustomerByIdDB(@Param('id') id: number, @Body() updateCustomerDB: CustomerProfile): Promise<CustomerProfile> {
+    async updateCustomerByIdDB(@Param('id') id: number, @Body() updateCustomerDB: CustomerEntity): Promise<CustomerEntity> {
     return this.customerService.updateCustomerByIdDB(id, updateCustomerDB);
   }
 
@@ -92,7 +92,7 @@ return this.customerService.getCustomer(myobj);
 
 
 @Post('addimage')
-@UseInterceptors(FileInterceptor('myfile',
+@UseInterceptors(FileInterceptor('myimage',
   { fileFilter: (req, file, cb) => {
     if (file.originalname.match(/^.*\.(jpg|webp|png|jpeg)$/))
     cb(null, true);
@@ -100,7 +100,7 @@ return this.customerService.getCustomer(myobj);
     cb(new MulterError('LIMIT_UNEXPECTED_FILE', 'image'), false);
     }
     },
-    limits: { fileSize: 30000 },
+    limits: { fileSize: 160000000 },
     storage:diskStorage({
     destination: './uploads',
     filename: function (req, file, cb) {
