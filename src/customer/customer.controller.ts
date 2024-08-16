@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe, UsePipes, ValidationPipe, UseInterceptors, UploadedFile, Res, Query, Put, DefaultValuePipe } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe, UsePipes, ValidationPipe, UseInterceptors, UploadedFile, Res, Query, Put, DefaultValuePipe, ParseFilePipe, MaxFileSizeValidator, FileTypeValidator } from '@nestjs/common';
 import { CustomerService } from './customer.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage, MulterError } from 'multer';
@@ -133,6 +133,29 @@ res.sendFile(filename,{ root: './uploads' })
 }
 
 
+  //Newer code here
+  
+  @Post('/signup')
+@UseInterceptors(FileInterceptor('myfile',
+{storage:diskStorage({
+  destination: './uploads',
+  filename: function (req, file, cb) {
+    cb(null,Date.now()+file.originalname)
+  }
+})
 
+}))
+signup(@Body() mydto:CustomerDTO,@UploadedFile(  new ParseFilePipe({
+  validators: [
+    new MaxFileSizeValidator({ maxSize: 16000000}),
+    new FileTypeValidator({ fileType: 'png|jpg|jpeg|' }),
+  ],
+}),) file: Express.Multer.File){
+
+mydto.filenames = file.filename;  
+
+return this.customerService.signup(mydto);
+
+}
 
 }

@@ -4,10 +4,17 @@ import { CustomerEntity } from './entities/customer.entity'
 import { CustomerDTO } from './dto/cutomer.dto';
 import { Repository } from 'typeorm';
 import { MailerService } from '@nestjs-modules/mailer';
+import * as bcrypt from 'bcrypt';
 // import { Manager } from "../manager/manager.entity";
 
 @Injectable()
 export class CustomerService {
+
+async signup(data: CustomerDTO): Promise<CustomerEntity> {
+  const salt = await bcrypt.genSalt();
+  data.password = await bcrypt.hash(data.password, salt);
+  return this.customerRepo.save(data);
+  }
 
   constructor(
     @InjectRepository(CustomerEntity) private customerRepo: Repository<CustomerEntity>,
@@ -42,9 +49,9 @@ export class CustomerService {
     this.mailerService.sendMail({
       to: 'thexfiles163@gmail.com', 
       from: 'albarhossain@gmail.com', 
-      subject: 'Testing mailer',
-      text: 'welcome', 
-      html: '<b>welcome user</b>', 
+      subject: 'Welcome to Bangladesh\'s premier sneaker marketplace',
+      text: 'Welcome', 
+      html: '<b>Welcome User, Thank You for signing up.</b>', 
     })
   }
 
@@ -87,3 +94,6 @@ export class CustomerService {
     return {message: "update customerid: "+id, body:myobj}
     }
 }
+
+//Newer code here
+

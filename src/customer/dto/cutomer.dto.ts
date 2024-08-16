@@ -1,24 +1,18 @@
 import { IsEmail, IsNotEmpty, IsNumber, IsString, Matches } from "class-validator";
 
 export class CustomerDTO {
-    
-    // @IsNotEmpty()
-    // @IsNumber()
-    // id: number;
-
+    id: number;
+    @Matches(/^[a-zA-Z]+$/, { message: "enter a proper name" })
     @IsNotEmpty()
-    @IsString({ message: "Please enter a valid name" })
-    // @Matches(/^[A-Za-z]+$/, { message: "Please enter a valid name" })
     fullname: string;
-
     @IsEmail()
     email: string;
-
     @IsNotEmpty()
     phone: string
-
     @IsNotEmpty()
     password: string
+    @IsNotEmpty()
+    filenames: string;
 }
 export class CustomerUpdateDTO{
     @IsEmail()
