@@ -1,8 +1,8 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe, UsePipes, ValidationPipe, UseInterceptors, UploadedFile, Res, Query, Put, DefaultValuePipe, ParseFilePipe, MaxFileSizeValidator, FileTypeValidator } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe, UsePipes, ValidationPipe, UseInterceptors, UploadedFile, Res, Query, Put, DefaultValuePipe, ParseFilePipe, MaxFileSizeValidator, FileTypeValidator, Session, UnauthorizedException } from '@nestjs/common';
 import { CustomerService } from './customer.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage, MulterError } from 'multer';
-import { CustomerDTO, CustomerUpdateDTO } from './dto/cutomer.dto';
+import { CustomerDTO, CustomerLoginDTO, CustomerUpdateDTO } from './dto/cutomer.dto';
 import { CustomerEntity } from './entities/customer.entity';
 
 @Controller('customer')
@@ -158,4 +158,21 @@ return this.customerService.signup(mydto);
 
 }
 
+@Post('/signin')
+@UsePipes(new ValidationPipe())
+async signin(@Session() session, @Body() mydto:CustomerLoginDTO)
+{
+  const res = await (this.customerService.signin(mydto));
+if(res==true)
+{
+session.email = mydto.email;
+return (session.email);
+}
+else
+{
+throw new UnauthorizedException({ message: "invalid credentials" });
+}
+}
+  
+  
 }

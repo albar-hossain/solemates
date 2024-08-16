@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CustomerEntity } from './entities/customer.entity'
-import { CustomerDTO } from './dto/cutomer.dto';
+import { CustomerDTO, CustomerLoginDTO } from './dto/cutomer.dto';
 import { Repository } from 'typeorm';
 import { MailerService } from '@nestjs-modules/mailer';
 import * as bcrypt from 'bcrypt';
@@ -9,12 +9,6 @@ import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class CustomerService {
-
-async signup(data: CustomerDTO): Promise<CustomerEntity> {
-  const salt = await bcrypt.genSalt();
-  data.password = await bcrypt.hash(data.password, salt);
-  return this.customerRepo.save(data);
-  }
 
   constructor(
     @InjectRepository(CustomerEntity) private customerRepo: Repository<CustomerEntity>,
@@ -43,6 +37,27 @@ async signup(data: CustomerDTO): Promise<CustomerEntity> {
   }
 
   //new Code from here
+
+  async signup(data: CustomerDTO): Promise<CustomerEntity> {
+    const salt = await bcrypt.genSalt();
+    data.password = await bcrypt.hash(data.password, salt);
+    return this.customerRepo.save(data);
+  }
+  
+  async signin(mydto:CustomerLoginDTO):Promise<boolean>{
+    if (mydto.email != null && mydto.password != null) {
+        const mydata = await this.customerRepo.findOneBy({ email: mydto.email });
+        const isMatch = await bcrypt.compare(mydto.password, mydata.password);
+        if (isMatch) {
+            return true;
+        }
+        else {
+            return false;
+        }
+    } else {
+        return false;
+    }
+}
 
   //semd mail
   sendMail() : void {

@@ -14,6 +14,13 @@ export class CustomerDTO {
     @IsNotEmpty()
     filenames: string;
 }
+
+export class CustomerLoginDTO {
+    @IsNotEmpty()
+    email: string;
+    @IsNotEmpty()
+    password: string;
+}
 export class CustomerUpdateDTO{
     @IsEmail()
     "username" :string;
