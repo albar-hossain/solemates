@@ -1,8 +1,8 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe, UsePipes, ValidationPipe, UseInterceptors, UploadedFile, Res, Query, Put } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe, UsePipes, ValidationPipe, UseInterceptors, UploadedFile, Res, Query, Put, DefaultValuePipe } from '@nestjs/common';
 import { CustomerService } from './customer.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage, MulterError } from 'multer';
-import { CustomerDTO, CustomerUpdateDTO } from './dto/cutomer.dto';
+import { CustomerDTO, CustomerUpdateDTO, UserDTO } from './dto/cutomer.dto';
 import { CustomerEntity } from './entities/customer.entity';
 
 @Controller('customer')
@@ -72,11 +72,14 @@ return this.customerService.getCustomer(myobj);
     return this.customerService.addCustomer(myobj);
   }
 
+
   @Get('getCustomerByIdDB/:id')
   getCustomerByIdDB(@Param('id', ParseIntPipe) id: number): Promise<CustomerEntity>
   {
     return this.customerService.getCustomerByIdDB(id);
   }
+
+
 
   
 @Put('updateCustomerDB/:id')
@@ -89,6 +92,7 @@ return this.customerService.getCustomer(myobj);
   async deleteCustomer(@Param('id') id: number): Promise<string> {
     return this.customerService.deleteCustomer(id);
   }
+
 
 
 @Post('addimage')

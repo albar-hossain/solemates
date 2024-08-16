@@ -22,3 +22,21 @@ export class CustomerUpdateDTO{
     "username" :string;
     "address":string;
 }
+
+export class UserDTO {
+
+    id: number;
+
+    @IsNotEmpty()
+    @IsString({ message: "Please enter a valid username" })
+    // @Matches(/^[A-Za-z]+$/, { message: "Please enter a valid name" })
+    username: string;
+    
+    @IsNotEmpty()
+    @IsString({ message: "Please enter a valid name" })
+    // @Matches(/^[A-Za-z]+$/, { message: "Please enter a valid name" })
+    fullName: string;
+
+    
+    isActive: boolean;
+}

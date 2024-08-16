@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CustomerEntity } from './entities/customer.entity'
-import { CustomerDTO } from './dto/cutomer.dto';
+import { CustomerDTO, UserDTO } from './dto/cutomer.dto';
 import { Repository } from 'typeorm';
 // import { Manager } from "../manager/manager.entity";
 
@@ -9,7 +9,7 @@ import { Repository } from 'typeorm';
 export class CustomerService {
 
   constructor(
-    @InjectRepository(CustomerEntity)  private customerRepo: Repository<CustomerEntity>,
+    @InjectRepository(CustomerEntity) private customerRepo: Repository<CustomerEntity>,
     // @InjectRepository(Manager)  private managerRepo: Repository<Manager>
 ){}
 
@@ -48,6 +48,7 @@ export class CustomerService {
     addCustomer(myobj:CustomerDTO): Promise<CustomerEntity>{
     return this.customerRepo.save(myobj);
   }
+
   //Show all customer from DB NOT WORKING
   getAllCustomer(): Promise<CustomerEntity[]> {
     return this.customerRepo.find();
@@ -56,6 +57,7 @@ export class CustomerService {
   getCustomerByIdDB(id: number): Promise<CustomerEntity> {
     return this.customerRepo.findOneBy({ id: id });
   }
+
 
   async updateCustomerByIdDB(id: number, updateCustomer: CustomerEntity): Promise<CustomerEntity> {
     await this.customerRepo.update(id, updateCustomer);
@@ -66,7 +68,6 @@ export class CustomerService {
     await this.customerRepo.delete(id);
     return `Customer with ID ${id} deleted successfully`; 
   }
-
 
     
     updateCustomer(myobj:object, id: number): object{

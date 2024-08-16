@@ -1,4 +1,4 @@
-import { Entity, Column, PrimaryGeneratedColumn, OneToMany} from 'typeorm';
+import { Column, PrimaryGeneratedColumn, OneToMany, Entity, Generated, BeforeInsert, PrimaryColumn, CreateDateColumn} from 'typeorm';
 
 @Entity("customer")
 export class CustomerEntity{
@@ -42,4 +42,5 @@ export class CustomerEntity{
 //  managers: Manager[];
 
 }
+
 
