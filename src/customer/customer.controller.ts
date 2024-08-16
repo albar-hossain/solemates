@@ -2,7 +2,7 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe, UsePip
 import { CustomerService } from './customer.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage, MulterError } from 'multer';
-import { CustomerDTO, CustomerUpdateDTO, UserDTO } from './dto/cutomer.dto';
+import { CustomerDTO, CustomerUpdateDTO } from './dto/cutomer.dto';
 import { CustomerEntity } from './entities/customer.entity';
 
 @Controller('customer')
@@ -14,10 +14,10 @@ export class CustomerController {
     return this.customerService.create(createCustomerDto);
   }
 
-  @Get()
-  findAll() {
-    return this.customerService.findAll();
-  }
+  // @Get()
+  // findAll() {
+  //   return this.customerService.findAll();
+  // }
 
   @Get(':id')
   findOne(@Param('id') id: string) {
@@ -35,6 +35,13 @@ export class CustomerController {
   }
 
   //New Code from here
+
+  //Send mail
+  @Get()
+  sendMail(): void {
+    return this.customerService.sendMail();
+  }
+  
 
   @Get('get/:id')
   getCustomerById(@Param('id', ParseIntPipe) id: number): object {
@@ -68,7 +75,7 @@ return this.customerService.getCustomer(myobj);
   @Post('addcustomer')
   @UsePipes(new ValidationPipe())
   addCustomer(@Body() myobj:CustomerDTO): object {
-    console.log(myobj);
+    // console.log(myobj);
     return this.customerService.addCustomer(myobj);
   }
 

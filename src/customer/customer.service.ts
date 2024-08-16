@@ -1,8 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CustomerEntity } from './entities/customer.entity'
-import { CustomerDTO, UserDTO } from './dto/cutomer.dto';
+import { CustomerDTO } from './dto/cutomer.dto';
 import { Repository } from 'typeorm';
+import { MailerService } from '@nestjs-modules/mailer';
 // import { Manager } from "../manager/manager.entity";
 
 @Injectable()
@@ -10,6 +11,7 @@ export class CustomerService {
 
   constructor(
     @InjectRepository(CustomerEntity) private customerRepo: Repository<CustomerEntity>,
+    private mailerService: MailerService
     // @InjectRepository(Manager)  private managerRepo: Repository<Manager>
 ){}
 
@@ -34,6 +36,17 @@ export class CustomerService {
   }
 
   //new Code from here
+
+  //semd mail
+  sendMail() : void {
+    this.mailerService.sendMail({
+      to: 'thexfiles163@gmail.com', 
+      from: 'albarhossain@gmail.com', 
+      subject: 'Testing mailer',
+      text: 'welcome', 
+      html: '<b>welcome user</b>', 
+    })
+  }
 
   getCustomerById(id: number): object{
     return {message: "Customer id:  "+id };

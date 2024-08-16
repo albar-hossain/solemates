@@ -2,17 +2,20 @@ import { IsEmail, IsNotEmpty, IsNumber, IsString, Matches } from "class-validato
 
 export class CustomerDTO {
     
-    @IsNotEmpty()
-    @IsString({ message: "Please enter a valid name" })
-    @Matches(/^[A-Za-z]+$/, { message: "Please enter a valid name" })
-    name: string;
+    // @IsNotEmpty()
+    // @IsNumber()
+    // id: number;
 
     @IsNotEmpty()
-    @IsNumber()
-    id: number;
-    
+    @IsString({ message: "Please enter a valid name" })
+    // @Matches(/^[A-Za-z]+$/, { message: "Please enter a valid name" })
+    fullname: string;
+
     @IsEmail()
     email: string;
+
+    @IsNotEmpty()
+    phone: string
 
     @IsNotEmpty()
     password: string
@@ -23,20 +26,20 @@ export class CustomerUpdateDTO{
     "address":string;
 }
 
-export class UserDTO {
+// export class UserDTO {
 
-    id: number;
+//     id: number;
 
-    @IsNotEmpty()
-    @IsString({ message: "Please enter a valid username" })
-    // @Matches(/^[A-Za-z]+$/, { message: "Please enter a valid name" })
-    username: string;
+//     @IsNotEmpty()
+//     @IsString({ message: "Please enter a valid username" })
+//     // @Matches(/^[A-Za-z]+$/, { message: "Please enter a valid name" })
+//     username: string;
     
-    @IsNotEmpty()
-    @IsString({ message: "Please enter a valid name" })
-    // @Matches(/^[A-Za-z]+$/, { message: "Please enter a valid name" })
-    fullName: string;
+//     @IsNotEmpty()
+//     @IsString({ message: "Please enter a valid name" })
+//     // @Matches(/^[A-Za-z]+$/, { message: "Please enter a valid name" })
+//     fullName: string;
 
     
-    isActive: boolean;
-}
+//     isActive: boolean;
+// }
