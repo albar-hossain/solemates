@@ -1,10 +1,11 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CustomerEntity } from './entities/customer.entity'
-import { CustomerDTO, CustomerLoginDTO } from './dto/cutomer.dto';
+import { CustomerDTO, CustomerLoginDTO, CustomerUpdateDTO } from './dto/cutomer.dto';
 import { Repository } from 'typeorm';
 import { MailerService } from '@nestjs-modules/mailer';
 import * as bcrypt from 'bcrypt';
+import { CustomerProfile } from './entities/customerprofile.entity';
 // import { Manager } from "../manager/manager.entity";
 
 @Injectable()
@@ -12,30 +13,75 @@ export class CustomerService {
 
   constructor(
     @InjectRepository(CustomerEntity) private customerRepo: Repository<CustomerEntity>,
+    @InjectRepository(CustomerProfile) private customerprofileRepo:Repository<CustomerProfile>,
     private mailerService: MailerService
     // @InjectRepository(Manager)  private managerRepo: Repository<Manager>
 ){}
 
-  create(createCustomerDto: CustomerDTO) {
-    return 'This action adds a new customer';
+async getIndex(): Promise<CustomerEntity[]> {
+  return this.customerRepo.find();
+  }
+  
+
+  async getCustomerByEmail(email: string): Promise<CustomerEntity> {
+    return this.customerRepo.findOneBy({ email: email });
+}
+async getCustomerByID(id) {
+    const data=await this.customerRepo.findOneBy({ id });
+    console.log(data);
+    if(data!==null) {
+        return data;
+    }
+    else 
+    {
+    throw new HttpException('Not Found', HttpStatus.NOT_FOUND);
+    }
+
+  }
+  
+async getCustomerbyIDAndName(id, name): Promise<CustomerEntity> {
+    return this.customerRepo.findOneBy({ id: id, fullname: name });
+  }
+  
+  async addCustomer(mydto) {
+    const salt = await bcrypt.genSalt();
+    const hassedpassed = await bcrypt.hash(mydto.password, salt);
+    mydto.password= hassedpassed;
+    return this.customerRepo.save(mydto);
+    }
+
+    async createCustomer(user: CustomerEntity, userProfile: CustomerProfile): Promise<CustomerEntity> {
+      userProfile.CustomerEntity = user;
+      await this.customerprofileRepo.save(userProfile);
+      return this.customerprofileRepo.save(user);
+      }
+
+    async updateCustomer(email: string, data: CustomerUpdateDTO): Promise<CustomerEntity> {
+      await this.customerRepo.update({ email: email }, data);
+      return this.customerRepo.findOneBy({ id: data.id });
+      
   }
 
-  findAll() {
-    return `This action returns all customer`;
+    async updateCustomerById(id: number, data: CustomerUpdateDTO): Promise<CustomerEntity> {
+      await this.customerRepo.update(id, data);
+      return this.customerRepo.findOneBy({ id });  
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} customer`;
+  deleteCustomerByID(id):any {
+    return this.customerRepo.delete(id);
   }
 
-  update(id: number, updateCustomerDto: CustomerDTO) {
-    return `This action updates a #${id} customer`;
+  async deleteCustomer(id: number): Promise<CustomerEntity[]> {
+      await this.customerRepo.delete(id);
+    return this.customerRepo.find();
+    //  return `Customer with ID ${id} deleted successfully`; 
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} customer`;
-  }
-
+    async getimagebycustomerid(customerid: number): Promise<string> {
+    const mydata: CustomerDTO = await this.customerRepo.findOneBy({ id: customerid });
+    console.log(mydata);
+    return mydata.filenames;
+}
   //new Code from here
 
   async signup(data: CustomerDTO): Promise<CustomerEntity> {
@@ -79,10 +125,6 @@ export class CustomerService {
     getCustomer(myobj:object): object{
     return myobj;
   }
-  //Add new customer to DB
-    addCustomer(myobj:CustomerDTO): Promise<CustomerEntity>{
-    return this.customerRepo.save(myobj);
-  }
 
   //Show all customer from DB NOT WORKING
   getAllCustomer(): Promise<CustomerEntity[]> {
@@ -99,16 +141,14 @@ export class CustomerService {
     return this.customerRepo.findOneBy({ id: id });
   }
 
-  async deleteCustomer(id: number): Promise<string> {
-    await this.customerRepo.delete(id);
-    return `Customer with ID ${id} deleted successfully`; 
-  }
+  // async deleteCustomer(id: number): Promise<string> {
+  //   await this.customerRepo.delete(id);
+  //   return `Customer with ID ${id} deleted successfully`; 
+  // }
 
     
-    updateCustomer(myobj:object, id: number): object{
-    return {message: "update customerid: "+id, body:myobj}
-    }
+    // updateCustomer(myobj:object, id: number): object{
+    // return {message: "update customerid: "+id, body:myobj}
+    // }
 }
-
-//Newer code here
 

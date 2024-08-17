@@ -1,30 +1,8 @@
-import { Column, PrimaryGeneratedColumn, OneToMany, Entity, Generated, BeforeInsert, PrimaryColumn, CreateDateColumn} from 'typeorm';
+import { Column, PrimaryGeneratedColumn, OneToMany, Entity, Generated, BeforeInsert, PrimaryColumn, CreateDateColumn, OneToOne, JoinColumn} from 'typeorm';
+import { CustomerProfile } from './customerprofile.entity';
 
 @Entity("customer")
 export class CustomerEntity{
-
-    // @Column({type: 'varchar', length:50})
-    // name: string;
-    // @Column()
-    // email: string;
-    // @Column()
-    // password: string;
-
-    // @PrimaryGeneratedColumn() 
-    // customer_id: number;
-  
-    // @Column({ type: 'varchar', length: 100, unique: true })
-    // email: string;
-    // @Column({ type: 'varchar' })
-    // password: string;
-    // @Column({name:'fulName', type: 'varchar', length: 150 })
-    // name: string;
-    // @Column()
-    // address: string;
-    // @Column()
-    // filename: string;
-
-
     @PrimaryGeneratedColumn()
     id: number;
     @Column({ name: 'fullname', type: "varchar", length: 150 })
@@ -38,8 +16,11 @@ export class CustomerEntity{
     @Column()
     filenames: string;
 
-//     @OneToMany(() => Manager, manager => manager.customer)
-//  managers: Manager[];
+    @OneToOne(() => CustomerProfile, CustomerProfile => CustomerProfile.CustomerEntity, { cascade: true
+    })
+    @JoinColumn()
+    CustomerProfile : CustomerProfile;
+    
 
 }
 

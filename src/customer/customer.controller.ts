@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe, UsePipes, ValidationPipe, UseInterceptors, UploadedFile, Res, Query, Put, DefaultValuePipe, ParseFilePipe, MaxFileSizeValidator, FileTypeValidator, Session, UnauthorizedException } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe, UsePipes, ValidationPipe, UseInterceptors, UploadedFile, Res, Query, Put, DefaultValuePipe, ParseFilePipe, MaxFileSizeValidator, FileTypeValidator, Session, UnauthorizedException, HttpException, HttpStatus } from '@nestjs/common';
 import { CustomerService } from './customer.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage, MulterError } from 'multer';
@@ -9,38 +9,100 @@ import { CustomerEntity } from './entities/customer.entity';
 export class CustomerController {
   constructor(private readonly customerService: CustomerService) {}
 
-  @Post()
-  create(@Body() createCustomerDto: CustomerDTO) {
-    return this.customerService.create(createCustomerDto);
+
+    //Send mail
+    @Get()
+    sendMail(): void {
+      return this.customerService.sendMail();
   }
+  @Get('/index')
+  getCustomerall(): any {
+    return this.customerService.getIndex();
+  }
+
+  @Get('/findcustomer/:id')
+  async getCustomerByID(@Param('id', ParseIntPipe) id: number): Promise<CustomerEntity> {
+    const res = await this.customerService.getCustomerByID(id);
+        if (res !== null) {
+            return await this.customerService.getCustomerByID(id);
+        }
+        else {
+            throw new HttpException("Customer not found", HttpStatus.NOT_FOUND);
+        }
+  }
+
+
+  @Post('insertcustomer')
+  
+  @UseInterceptors(FileInterceptor('myfile',
+  {storage:diskStorage({
+    destination: './uploads',
+    filename: function (req, file, cb) {
+      cb(null,Date.now()+file.originalname)
+    }
+  })
+  }))
+  insertCustomer(@Body() mydto:CustomerDTO,@UploadedFile(  new ParseFilePipe({
+    validators: [
+      new MaxFileSizeValidator({ maxSize: 160000000 }),
+      new FileTypeValidator({ fileType: 'png|jpg|jpeg|' }),
+    ],
+  }),) file: Express.Multer.File){
+  
+  mydto.filenames = file.filename;  
+  return this.customerService.addCustomer(mydto);
+  }
+
+  
+
+  @Put('/updatecustomer/:id')
+    @UsePipes(new ValidationPipe())
+    updateCustomerbyID(@Param('id') id: number, @Body() data:CustomerUpdateDTO ): object {
+        return this.customerService.updateCustomerById(id, data);
+    }
+    
+
+
+  @Delete('/deletecustomer/:id')
+  deleteCustomerbyid(@Param('id', ParseIntPipe) id: number): any {
+    return this.customerService.deleteCustomerByID(id);
+  }
+
+  
+    @Get('/getimage/:name')
+    getImages(@Param('name') name, @Res() res) {
+      res.sendFile(name,{ root: './uploads' })
+    }
+    
+  
+  // @Post()
+  // create(@Body() createCustomerDto: CustomerDTO) {
+  //   return this.customerService.create(createCustomerDto);
+  // }
 
   // @Get()
   // findAll() {
   //   return this.customerService.findAll();
   // }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.customerService.findOne(+id);
-  }
+  // @Get(':id')
+  // findOne(@Param('id') id: string) {
+  //   return this.customerService.findOne(+id);
+  // }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateCustomerDto: CustomerDTO) {
-    return this.customerService.update(+id, updateCustomerDto);
-  }
+  // @Patch(':id')
+  // update(@Param('id') id: string, @Body() updateCustomerDto: CustomerDTO) {
+  //   return this.customerService.update(+id, updateCustomerDto);
+  // }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.customerService.remove(+id);
-  }
+  // @Delete(':id')
+  // remove(@Param('id') id: string) {
+  //   return this.customerService.remove(+id);
+  // }
 
   //New Code from here
 
-  //Send mail
-  @Get()
-  sendMail(): void {
-    return this.customerService.sendMail();
-  }
+
   
 
   @Get('get/:id')
@@ -49,7 +111,7 @@ export class CustomerController {
     return this.customerService.getCustomerById(id);
   }
 
-  @Get('getbynameandid')
+  @Get('get/bynameandid')
   getCustomerByNameAndId(@Query('name') name: string, @Query('id') id: number): object {
     return this.customerService.getCustomerByNameAndId(name, id);
   }
@@ -60,10 +122,10 @@ export class CustomerController {
 return this.customerService.getCustomer(myobj);
   }
 
-  @Put('updatecustomer/:id')
-  updateCustomer(@Body() myobj:CustomerUpdateDTO, @Param('id') id:number): object {
-    return this.customerService.updateCustomer(myobj,id)
-  }
+  // @Put('updatecustomer/:id')
+  // updateCustomer(@Body() myobj:CustomerUpdateDTO, @Param('id') id:number): object {
+  //   return this.customerService.updateCustomer(myobj,id)
+  // }
 
   //Database part
 
@@ -97,7 +159,8 @@ return this.customerService.getCustomer(myobj);
     
   @Delete('deleteCustomer/:id')
   async deleteCustomer(@Param('id') id: number): Promise<string> {
-    return this.customerService.deleteCustomer(id);
+    await this.customerService.deleteCustomer(id);
+    return `Customer with ID ${id} has been successfully deleted.`;
   }
 
 
@@ -172,7 +235,22 @@ else
 {
 throw new UnauthorizedException({ message: "invalid credentials" });
 }
+  }
+
+  @Get('/signout')
+signout(@Session() session)
+{
+  if(session.destroy())
+  {
+    return {message:"you are logged out"};
+  }
+  else
+  {
+    throw new UnauthorizedException("invalid actions");
+  }
 }
+  
+
   
   
 }

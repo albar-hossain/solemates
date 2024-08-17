@@ -4,9 +4,10 @@ import { CustomerController } from './customer.controller';
 import { CustomerEntity } from './entities/customer.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { MailerModule } from '@nestjs-modules/mailer';
+import { CustomerProfile } from './entities/customerprofile.entity';
 
 @Module({
-  imports:[ TypeOrmModule.forFeature ([CustomerEntity]),MailerModule.forRoot({
+  imports:[ TypeOrmModule.forFeature ([CustomerEntity,CustomerProfile]),MailerModule.forRoot({
     transport: {
     host: 'smtp.gmail.com',
     port: 465,

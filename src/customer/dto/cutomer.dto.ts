@@ -16,15 +16,24 @@ export class CustomerDTO {
 }
 
 export class CustomerLoginDTO {
-    @IsNotEmpty()
+    // @IsNotEmpty()
     email: string;
-    @IsNotEmpty()
+    // @IsNotEmpty()
     password: string;
 }
-export class CustomerUpdateDTO{
-    @IsEmail()
-    "username" :string;
-    "address":string;
+export class CustomerUpdateDTO {
+    
+    id: number;
+    
+    fullname: string;
+    
+    email: string;
+    
+    phone: string;
+    
+    password: string;
+    
+    filenames: string;
 }
 
 // export class UserDTO {
