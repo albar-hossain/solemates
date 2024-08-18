@@ -1,38 +1,38 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe, UsePipes, ValidationPipe, UseInterceptors, UploadedFile, Res, Query, Put, DefaultValuePipe, ParseFilePipe, MaxFileSizeValidator, FileTypeValidator, Session, UnauthorizedException, HttpException, HttpStatus } from '@nestjs/common';
-import { CustomerService } from './customer.service';
+import { ManagerService } from './manager.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage, MulterError } from 'multer';
-import { CustomerDTO, CustomerLoginDTO, CustomerUpdateDTO } from './dto/cutomer.dto';
-import { CustomerEntity } from './entities/customer.entity';
+import { ManagerDTO, ManagerLoginDTO, ManagerUpdateDTO } from './dto/manager.dto';
+import { ManagerEntity } from './entities/manager.entity';
 
-@Controller('customer')
-export class CustomerController {
-  constructor(private readonly customerService: CustomerService) {}
+@Controller('manager')
+export class ManagerController {
+  constructor(private readonly managerService: ManagerService) {}
 
 
     //Send mail
     @Get()
     sendMail(): void {
-      return this.customerService.sendMail();
+      return this.managerService.sendMail();
   }
   @Get('/index')
-  getCustomerall(): any {
-    return this.customerService.getIndex();
+  getManagerall(): any {
+    return this.managerService.getIndex();
   }
 
-  @Get('/findcustomer/:id')
-  async getCustomerByID(@Param('id', ParseIntPipe) id: number): Promise<CustomerEntity> {
-    const res = await this.customerService.getCustomerByID(id);
+  @Get('/findmanager/:id')
+  async getManagerByID(@Param('id', ParseIntPipe) id: number): Promise<ManagerEntity> {
+    const res = await this.managerService.getManagerByID(id);
         if (res !== null) {
-            return await this.customerService.getCustomerByID(id);
+            return await this.managerService.getManagerByID(id);
         }
         else {
-            throw new HttpException("Customer not found", HttpStatus.NOT_FOUND);
+            throw new HttpException("Manager not found", HttpStatus.NOT_FOUND);
         }
   }
 
 
-  @Post('insertcustomer')
+  @Post('insertmanager')
   
   @UseInterceptors(FileInterceptor('myfile',
   {storage:diskStorage({
@@ -42,7 +42,7 @@ export class CustomerController {
     }
   })
   }))
-  insertCustomer(@Body() mydto:CustomerDTO,@UploadedFile(  new ParseFilePipe({
+  insertManager(@Body() mydto:ManagerDTO,@UploadedFile(  new ParseFilePipe({
     validators: [
       new MaxFileSizeValidator({ maxSize: 160000000 }),
       new FileTypeValidator({ fileType: 'png|jpg|jpeg|' }),
@@ -50,22 +50,22 @@ export class CustomerController {
   }),) file: Express.Multer.File){
   
   mydto.filenames = file.filename;  
-  return this.customerService.addCustomer(mydto);
+  return this.managerService.addManager(mydto);
   }
 
   
 
-  @Put('/updatecustomer/:id')
+  @Put('/updatemanager/:id')
     @UsePipes(new ValidationPipe())
-    updateCustomerbyID(@Param('id') id: number, @Body() data:CustomerUpdateDTO ): object {
-        return this.customerService.updateCustomerById(id, data);
+    updateManagerbyID(@Param('id') id: number, @Body() data:ManagerUpdateDTO ): object {
+        return this.managerService.updateManagerById(id, data);
     }
     
 
 
-  @Delete('/deletecustomer/:id')
-  deleteCustomerbyid(@Param('id', ParseIntPipe) id: number): any {
-    return this.customerService.deleteCustomerByID(id);
+  @Delete('/deletemanager/:id')
+  deleteManagerbyid(@Param('id', ParseIntPipe) id: number): any {
+    return this.managerService.deleteManagerByID(id);
   }
 
   
@@ -75,61 +75,61 @@ export class CustomerController {
     }
     
   @Get('get/:id')
-  getCustomerById(@Param('id', ParseIntPipe) id: number): object {
+  getManagerById(@Param('id', ParseIntPipe) id: number): object {
     console.log(typeof (id));
-    return this.customerService.getCustomerById(id);
+    return this.managerService.getManagerById(id);
   }
 
   @Get('get/bynameandid')
-  getCustomerByNameAndId(@Query('name') name: string, @Query('id') id: number): object {
-    return this.customerService.getCustomerByNameAndId(name, id);
+  getManagerByNameAndId(@Query('name') name: string, @Query('id') id: number): object {
+    return this.managerService.getManagerByNameAndId(name, id);
   }
 
-  @Get('getcustomer')
-  getCustomer(@Body() myobj:object): object {
+  @Get('getmanager')
+  getManager(@Body() myobj:object): object {
     console.log(myobj);
-return this.customerService.getCustomer(myobj);
+return this.managerService.getManager(myobj);
   }
 
-  // @Put('updatecustomer/:id')
-  // updateCustomer(@Body() myobj:CustomerUpdateDTO, @Param('id') id:number): object {
-  //   return this.customerService.updateCustomer(myobj,id)
+  // @Put('updatemanager/:id')
+  // updateManager(@Body() myobj:ManagerUpdateDTO, @Param('id') id:number): object {
+  //   return this.managerService.updateManager(myobj,id)
   // }
 
   //Database part
 
-  @Get('getAllCustomer')
-  getAllCustomer(): Promise<CustomerEntity[]> {
-    return this.customerService.getAllCustomer();
+  @Get('getAllManager')
+  getAllManager(): Promise<ManagerEntity[]> {
+    return this.managerService.getAllManager();
   }
 
-  @Post('addcustomer')
+  @Post('addmanager')
   @UsePipes(new ValidationPipe())
-  addCustomer(@Body() myobj:CustomerDTO): object {
+  addManager(@Body() myobj:ManagerDTO): object {
     // console.log(myobj);
-    return this.customerService.addCustomer(myobj);
+    return this.managerService.addManager(myobj);
   }
 
 
-  @Get('getCustomerByIdDB/:id')
-  getCustomerByIdDB(@Param('id', ParseIntPipe) id: number): Promise<CustomerEntity>
+  @Get('getManagerByIdDB/:id')
+  getManagerByIdDB(@Param('id', ParseIntPipe) id: number): Promise<ManagerEntity>
   {
-    return this.customerService.getCustomerByIdDB(id);
+    return this.managerService.getManagerByIdDB(id);
   }
 
 
 
   
-@Put('updateCustomerDB/:id')
-    async updateCustomerByIdDB(@Param('id') id: number, @Body() updateCustomerDB: CustomerEntity): Promise<CustomerEntity> {
-    return this.customerService.updateCustomerByIdDB(id, updateCustomerDB);
+@Put('updateManagerDB/:id')
+    async updateManagerByIdDB(@Param('id') id: number, @Body() updateManagerDB: ManagerEntity): Promise<ManagerEntity> {
+    return this.managerService.updateManagerByIdDB(id, updateManagerDB);
   }
 
     
-  @Delete('deleteCustomer/:id')
-  async deleteCustomer(@Param('id') id: number): Promise<string> {
-    await this.customerService.deleteCustomer(id);
-    return `Customer with ID ${id} has been successfully deleted.`;
+  @Delete('deleteManager/:id')
+  async deleteManager(@Param('id') id: number): Promise<string> {
+    await this.managerService.deleteManager(id);
+    return `Manager with ID ${id} has been successfully deleted.`;
   }
 
 
@@ -177,7 +177,7 @@ res.sendFile(filename,{ root: './uploads' })
 })
 
 }))
-signup(@Body() mydto:CustomerDTO,@UploadedFile(  new ParseFilePipe({
+signup(@Body() mydto:ManagerDTO,@UploadedFile(  new ParseFilePipe({
   validators: [
     new MaxFileSizeValidator({ maxSize: 16000000}),
     new FileTypeValidator({ fileType: 'png|jpg|jpeg|' }),
@@ -186,15 +186,15 @@ signup(@Body() mydto:CustomerDTO,@UploadedFile(  new ParseFilePipe({
 
 mydto.filenames = file.filename;  
 
-return this.customerService.signup(mydto);
+return this.managerService.signup(mydto);
 
 }
 
 @Post('/signin')
 @UsePipes(new ValidationPipe())
-async signin(@Session() session, @Body() mydto:CustomerLoginDTO)
+async signin(@Session() session, @Body() mydto:ManagerLoginDTO)
 {
-  const res = await (this.customerService.signin(mydto));
+  const res = await (this.managerService.signin(mydto));
 if(res==true)
 {
 session.email = mydto.email;
