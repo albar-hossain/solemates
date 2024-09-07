@@ -29,9 +29,16 @@ export class CustomerService {
             where: { username: username },
         });
     }
-    async showProfile(username: string): Promise<CustomerEntity> {
-        return await this.customerRepo.findOneBy({ username: username });
+    async showProfile(email: string): Promise<CustomerEntity> {
+        const user = await this.customerRepo.findOne({ where: { email } });
+    
+        if (!user) {
+            throw new NotFoundException(`User with username ${email} not found`);
+        }
+    
+        return user;
     }
+    
 
 
     async updateOrder(id: number, customerDTO: CustomerDTO): Promise<CustomerEntity> {

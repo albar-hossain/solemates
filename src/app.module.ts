@@ -15,7 +15,7 @@ import { AuthModule } from './Customer/Auth/auth.module';
       port: 5432,
       username: 'postgres',
       password: 'root',
-      database: 'test',
+      database: 'solemate',
       autoLoadEntities: true,
       synchronize: true,
     }

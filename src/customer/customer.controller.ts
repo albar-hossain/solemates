@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpException, HttpStatus, InternalServerErrorException, Param, ParseIntPipe, Post, Put, Query, Req, Res, Session, UploadedFile, UseGuards, UseInterceptors, UsePipes, ValidationPipe } from "@nestjs/common";
+import { Body, Controller, Delete, Get, HttpException, HttpStatus, InternalServerErrorException, Param, ParseIntPipe, Post, Put, Query, Req, Res, Session, UnauthorizedException, UploadedFile, UseGuards, UseInterceptors, UsePipes, ValidationPipe } from "@nestjs/common";
 import { CustomerService } from "./customer.service";
 import { AuthGuard } from "./Auth/auth.guard";
 import { FileInterceptor } from "@nestjs/platform-express";
@@ -36,11 +36,14 @@ export class CustomerController {
     //3
     @UseGuards(SessionGuard)
     @Get('/viewprofile')
-    showProfile(@Session() session): object {
-        try {
-            return this.customerService.showProfile(session.username);
+    async showProfile(@Session() session): Promise<object> {
+        if (!session || !session.email) {
+            throw new UnauthorizedException("User is not logged in");
         }
-        catch {
+    
+        try {
+            return await this.customerService.showProfile(session.email);
+        } catch (error) {
             throw new InternalServerErrorException("Failed to show profile");
         }
     }
@@ -125,7 +128,7 @@ export class CustomerController {
 
     //9
     @UseGuards(SessionGuard)
-    @Get('usernames/:usernames')
+    @Get('usernames/:username')
     async getUserByUsername(@Param('username') username: string): Promise<CustomerEntity> {
         return this.customerService.findOneByUsername(username);
     }
