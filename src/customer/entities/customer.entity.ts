@@ -1,27 +1,34 @@
-import { Column, PrimaryGeneratedColumn, OneToMany, Entity, Generated, BeforeInsert, PrimaryColumn, CreateDateColumn, OneToOne, JoinColumn} from 'typeorm';
-import { CustomerProfile } from './customerprofile.entity';
+import { OrderEntity } from 'src/order/entities/order.entity';
+import { Entity, Column, PrimaryGeneratedColumn, OneToMany, JoinColumn, OneToOne, ManyToMany } from 'typeorm';
 
-@Entity("customer")
-export class CustomerEntity{
-    @PrimaryGeneratedColumn()
-    id: number;
-    @Column({ name: 'fullname', type: "varchar", length: 150 })
-    fullname: string;
-    @Column({ type: "varchar", length: 150, unique: true  })
-    email: string;
-    @Column()
-    phone: string;
-    @Column({ type: 'varchar' })
-    password: string;
-    @Column()
-    filenames: string;
+@Entity('customer')
+export class CustomerEntity {
+  @PrimaryGeneratedColumn({ name: 'id', type: 'int' })
+  id: number;
 
-    @OneToOne(() => CustomerProfile, CustomerProfile => CustomerProfile.CustomerEntity, { cascade: true
-    })
-    @JoinColumn()
-    CustomerProfile : CustomerProfile;
-    
+  @Column({ name: 'fullName', type: 'varchar', length: 100 })
+  fullName: string;
+
+  @Column({ name: 'userName', type: 'varchar', length: 100, unique: true })
+  userName: string;
+
+  @Column({ name: 'email', type: 'varchar', length: 100, unique: true })
+  email: string;
+
+  @Column({ name: 'password', type: 'varchar', length: 100 })
+  password: string;
+
+  @Column({
+    nullable: true,
+    name: 'filename',
+    type: 'varchar',
+    length: 500,
+  })
+  filename: string;
+
+  @OneToMany(() => OrderEntity, (order) => order.customer, { cascade: true })
+  orders?: OrderEntity[];   
+//   @ManyToMany(() = OrderEntity,(order) => order.product)
+//   orders: OrderEntity[];
 
 }
-
-

@@ -1,11 +1,10 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CustomerEntity } from './entities/customer.entity'
-import { CustomerDTO, CustomerLoginDTO, CustomerUpdateDTO } from './dto/cutomer.dto';
+import { CreateCustomerDto, LoginCustomerDTO, UpdateCustomerDTO, GetCustomerDTO } from './dto/cutomer.dto';
 import { Repository } from 'typeorm';
 import { MailerService } from '@nestjs-modules/mailer';
 import * as bcrypt from 'bcrypt';
-import { CustomerProfile } from './entities/customerprofile.entity';
 // import { Manager } from "../manager/manager.entity";
 
 @Injectable()
@@ -13,10 +12,15 @@ export class CustomerService {
 
   constructor(
     @InjectRepository(CustomerEntity) private customerRepo: Repository<CustomerEntity>,
-    @InjectRepository(CustomerProfile) private customerprofileRepo:Repository<CustomerProfile>,
     private mailerService: MailerService
-    // @InjectRepository(Manager)  private managerRepo: Repository<Manager>
-){}
+  ) { }
+  
+  async addCustomer(myobj: CustomerEntity): Promise<CustomerEntity> {
+    return await this.customerRepo.save(myobj);
+}
+async findOne(logindata: LoginCustomerDTO): Promise<any> {
+    return await this.customerRepo.findOneBy({ email: logindata.email });
+}
 
 async getIndex(): Promise<CustomerEntity[]> {
   return this.customerRepo.find();
@@ -39,30 +43,14 @@ async getCustomerByID(id) {
 
   }
   
-async getCustomerbyIDAndName(id, name): Promise<CustomerEntity> {
-    return this.customerRepo.findOneBy({ id: id, fullname: name });
-  }
-  
-  async addCustomer(mydto) {
-    const salt = await bcrypt.genSalt();
-    const hassedpassed = await bcrypt.hash(mydto.password, salt);
-    mydto.password= hassedpassed;
-    return this.customerRepo.save(mydto);
-    }
 
-    async createCustomer(user: CustomerEntity, userProfile: CustomerProfile): Promise<CustomerEntity> {
-      userProfile.CustomerEntity = user;
-      await this.customerprofileRepo.save(userProfile);
-      return this.customerprofileRepo.save(user);
-      }
-
-    async updateCustomer(email: string, data: CustomerUpdateDTO): Promise<CustomerEntity> {
+    async updateCustomer(email: string, data: UpdateCustomerDTO): Promise<CustomerEntity> {
       await this.customerRepo.update({ email: email }, data);
       return this.customerRepo.findOneBy({ id: data.id });
       
   }
 
-    async updateCustomerById(id: number, data: CustomerUpdateDTO): Promise<CustomerEntity> {
+    async updateCustomerById(id: number, data: UpdateCustomerDTO): Promise<CustomerEntity> {
       await this.customerRepo.update(id, data);
       return this.customerRepo.findOneBy({ id });  
   }
@@ -77,20 +65,15 @@ async getCustomerbyIDAndName(id, name): Promise<CustomerEntity> {
     //  return `Customer with ID ${id} deleted successfully`; 
   }
 
-    async getimagebycustomerid(customerid: number): Promise<string> {
-    const mydata: CustomerDTO = await this.customerRepo.findOneBy({ id: customerid });
-    console.log(mydata);
-    return mydata.filenames;
-}
   //new Code from here
 
-  async signup(data: CustomerDTO): Promise<CustomerEntity> {
+  async signup(data: CreateCustomerDto): Promise<CustomerEntity> {
     const salt = await bcrypt.genSalt();
     data.password = await bcrypt.hash(data.password, salt);
     return this.customerRepo.save(data);
   }
   
-  async signin(mydto:CustomerLoginDTO):Promise<boolean>{
+  async signin(mydto:LoginCustomerDTO):Promise<boolean>{
     if (mydto.email != null && mydto.password != null) {
         const mydata = await this.customerRepo.findOneBy({ email: mydto.email });
         const isMatch = await bcrypt.compare(mydto.password, mydata.password);
@@ -103,13 +86,24 @@ async getCustomerbyIDAndName(id, name): Promise<CustomerEntity> {
     } else {
         return false;
     }
-}
+  }
+  
+  //auth code here
+  async register(customerObject: CreateCustomerDto): Promise<GetCustomerDTO> {
+    const { password, ...response } =
+      await this.customerRepo.save(customerObject);
+    return response;
+  }
+
+  async login(loginData: LoginCustomerDTO): Promise<any> {
+    return await this.customerRepo.findOneBy({ email: loginData.email });
+  }
 
   //semd mail
   sendMail() : void {
     this.mailerService.sendMail({
-      to: 'thexfiles163@gmail.com', 
-      from: 'albarhossain@gmail.com', 
+      to: 'albarhossain@gmail.com', 
+      from: 'solemates.bd.2024@gmail.com', 
       subject: 'Welcome to Bangladesh\'s premier sneaker marketplace',
       text: 'Welcome', 
       html: '<b>Welcome User, Thank You for signing up.</b>', 
@@ -150,5 +144,8 @@ async getCustomerbyIDAndName(id, name): Promise<CustomerEntity> {
     // updateCustomer(myobj:object, id: number): object{
     // return {message: "update customerid: "+id, body:myobj}
     // }
+    async addAdmin(myobj: CustomerEntity): Promise<CustomerEntity> {
+      return await this.customerRepo.save(myobj);
+  }
 }
 

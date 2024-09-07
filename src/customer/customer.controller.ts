@@ -2,19 +2,20 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe, UsePip
 import { CustomerService } from './customer.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage, MulterError } from 'multer';
-import { CustomerDTO, CustomerLoginDTO, CustomerUpdateDTO } from './dto/cutomer.dto';
+import { CreateCustomerDto,LoginCustomerDTO,UpdateCustomerDTO,GetCustomerDTO} from './dto/cutomer.dto';
 import { CustomerEntity } from './entities/customer.entity';
 
 @Controller('customer')
 export class CustomerController {
   constructor(private readonly customerService: CustomerService) {}
 
-
     //Send mail
-    @Get()
+    @Get('/email')
     sendMail(): void {
       return this.customerService.sendMail();
   }
+
+
   @Get('/index')
   getCustomerall(): any {
     return this.customerService.getIndex();
@@ -32,32 +33,11 @@ export class CustomerController {
   }
 
 
-  @Post('insertcustomer')
-  
-  @UseInterceptors(FileInterceptor('myfile',
-  {storage:diskStorage({
-    destination: './uploads',
-    filename: function (req, file, cb) {
-      cb(null,Date.now()+file.originalname)
-    }
-  })
-  }))
-  insertCustomer(@Body() mydto:CustomerDTO,@UploadedFile(  new ParseFilePipe({
-    validators: [
-      new MaxFileSizeValidator({ maxSize: 160000000 }),
-      new FileTypeValidator({ fileType: 'png|jpg|jpeg|' }),
-    ],
-  }),) file: Express.Multer.File){
-  
-  mydto.filenames = file.filename;  
-  return this.customerService.addCustomer(mydto);
-  }
-
   
 
   @Put('/updatecustomer/:id')
     @UsePipes(new ValidationPipe())
-    updateCustomerbyID(@Param('id') id: number, @Body() data:CustomerUpdateDTO ): object {
+    updateCustomerbyID(@Param('id') id: number, @Body() data:UpdateCustomerDTO ): object {
         return this.customerService.updateCustomerById(id, data);
     }
     
@@ -103,61 +83,8 @@ return this.customerService.getCustomer(myobj);
     return this.customerService.getAllCustomer();
   }
 
-  @Post('addcustomer')
-  @UsePipes(new ValidationPipe())
-  addCustomer(@Body() myobj:CustomerDTO): object {
-    // console.log(myobj);
-    return this.customerService.addCustomer(myobj);
-  }
 
 
-  @Get('getCustomerByIdDB/:id')
-  getCustomerByIdDB(@Param('id', ParseIntPipe) id: number): Promise<CustomerEntity>
-  {
-    return this.customerService.getCustomerByIdDB(id);
-  }
-
-
-
-  
-@Put('updateCustomerDB/:id')
-    async updateCustomerByIdDB(@Param('id') id: number, @Body() updateCustomerDB: CustomerEntity): Promise<CustomerEntity> {
-    return this.customerService.updateCustomerByIdDB(id, updateCustomerDB);
-  }
-
-    
-  @Delete('deleteCustomer/:id')
-  async deleteCustomer(@Param('id') id: number): Promise<string> {
-    await this.customerService.deleteCustomer(id);
-    return `Customer with ID ${id} has been successfully deleted.`;
-  }
-
-
-
-@Post('addimage')
-@UseInterceptors(FileInterceptor('myimage',
-  { fileFilter: (req, file, cb) => {
-    if (file.originalname.match(/^.*\.(jpg|webp|png|jpeg)$/))
-    cb(null, true);
-    else {
-    cb(new MulterError('LIMIT_UNEXPECTED_FILE', 'image'), false);
-    }
-    },
-    limits: { fileSize: 160000000 },
-    storage:diskStorage({
-    destination: './uploads',
-    filename: function (req, file, cb) {
-    cb(null,Date.now()+file.originalname)
-    },
-    })
-    }
-)
-)
-addImage(@Body() myobj:object,@UploadedFile() file: Express.Multer.File) {
-console.log(file);
-console.log(myobj);
-return myobj;
-}
 
 @Get('/getimage/:name')
 getImage(@Param('name') filename:string, @Res() res) {
@@ -168,7 +95,7 @@ res.sendFile(filename,{ root: './uploads' })
   //Newer code here
   
   @Post('/signup')
-@UseInterceptors(FileInterceptor('myfile',
+@UseInterceptors(FileInterceptor('filename',
 {storage:diskStorage({
   destination: './uploads',
   filename: function (req, file, cb) {
@@ -177,14 +104,14 @@ res.sendFile(filename,{ root: './uploads' })
 })
 
 }))
-signup(@Body() mydto:CustomerDTO,@UploadedFile(  new ParseFilePipe({
+signup(@Body() mydto:CreateCustomerDto,@UploadedFile(  new ParseFilePipe({
   validators: [
     new MaxFileSizeValidator({ maxSize: 16000000}),
     new FileTypeValidator({ fileType: 'png|jpg|jpeg|' }),
   ],
 }),) file: Express.Multer.File){
 
-mydto.filenames = file.filename;  
+mydto.filename = file.filename;  
 
 return this.customerService.signup(mydto);
 
@@ -192,7 +119,7 @@ return this.customerService.signup(mydto);
 
 @Post('/signin')
 @UsePipes(new ValidationPipe())
-async signin(@Session() session, @Body() mydto:CustomerLoginDTO)
+async signin(@Session() session, @Body() mydto:LoginCustomerDTO)
 {
   const res = await (this.customerService.signin(mydto));
 if(res==true)
