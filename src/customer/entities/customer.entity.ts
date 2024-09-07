@@ -1,34 +1,31 @@
-import { OrderEntity } from 'src/order/entities/order.entity';
-import { Entity, Column, PrimaryGeneratedColumn, OneToMany, JoinColumn, OneToOne, ManyToMany } from 'typeorm';
+// import { ManagerEntity } from "src/manager/manager.entity";
+import { BeforeInsert, Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { OrderEntity } from "./order.entity";
 
-@Entity('customer')
+
+@Entity("customer")
 export class CustomerEntity {
-  @PrimaryGeneratedColumn({ name: 'id', type: 'int' })
-  id: number;
 
-  @Column({ name: 'fullName', type: 'varchar', length: 100 })
-  fullName: string;
+    @PrimaryGeneratedColumn()
+    customerId: string;
 
-  @Column({ name: 'userName', type: 'varchar', length: 100, unique: true })
-  userName: string;
+    @Column({ type: 'varchar', length: 100, unique: true })
+    email: string;
 
-  @Column({ name: 'email', type: 'varchar', length: 100, unique: true })
-  email: string;
+    @Column({ type: 'varchar', length: 100, unique: true })
+    username: string;
 
-  @Column({ name: 'password', type: 'varchar', length: 100 })
-  password: string;
 
-  @Column({
-    nullable: true,
-    name: 'filename',
-    type: 'varchar',
-    length: 500,
-  })
-  filename: string;
+    @Column({ type: 'varchar' })
+    password: string;
+    @Column({ name: 'fullName', type: 'varchar', length: 150 })
+    name: string;
+    @Column()
+    address: string;
+    @Column()
+    filename: string;
 
-  @OneToMany(() => OrderEntity, (order) => order.customer, { cascade: true })
-  orders?: OrderEntity[];   
-//   @ManyToMany(() = OrderEntity,(order) => order.product)
-//   orders: OrderEntity[];
+    @OneToMany(() => OrderEntity, (order) => order.customer, { cascade: true })
+    orders: OrderEntity[];   
 
 }

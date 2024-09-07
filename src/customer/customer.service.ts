@@ -1,151 +1,100 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { CustomerEntity } from './entities/customer.entity'
-import { CreateCustomerDto, LoginCustomerDTO, UpdateCustomerDTO, GetCustomerDTO } from './dto/cutomer.dto';
-import { Repository } from 'typeorm';
-import { MailerService } from '@nestjs-modules/mailer';
-import * as bcrypt from 'bcrypt';
-// import { Manager } from "../manager/manager.entity";
+import { HttpException, HttpStatus, Injectable, NotFoundException, ParseIntPipe } from "@nestjs/common";
+import { CustomerEntity } from "../Customer/entities/customer.entity";
+import { CustomerDTO, loginDTO, UpdateCustomerDTO } from "../Customer/dto/customer.dto";
+import { InjectRepository } from "@nestjs/typeorm";
+import { Like, Repository } from "typeorm";
+import { JwtService } from "@nestjs/jwt";
+import { MailerService } from "@nestjs-modules/mailer";
+
 
 @Injectable()
 export class CustomerService {
+    constructor(@InjectRepository(CustomerEntity)
+    private customerRepo: Repository<CustomerEntity>,
+    private mailerService: MailerService,
+        private jwtService: JwtService
 
-  constructor(
-    @InjectRepository(CustomerEntity) private customerRepo: Repository<CustomerEntity>,
-    private mailerService: MailerService
-  ) { }
-  
-  async addCustomer(myobj: CustomerEntity): Promise<CustomerEntity> {
-    return await this.customerRepo.save(myobj);
-}
-async findOne(logindata: LoginCustomerDTO): Promise<any> {
-    return await this.customerRepo.findOneBy({ email: logindata.email });
-}
-
-async getIndex(): Promise<CustomerEntity[]> {
-  return this.customerRepo.find();
-  }
-  
-
-  async getCustomerByEmail(email: string): Promise<CustomerEntity> {
-    return this.customerRepo.findOneBy({ email: email });
-}
-async getCustomerByID(id) {
-    const data=await this.customerRepo.findOneBy({ id });
-    console.log(data);
-    if(data!==null) {
-        return data;
+    ) { }
+    async addCustomer(myobj: CustomerEntity): Promise<CustomerEntity> {
+        return await this.customerRepo.save(myobj);
     }
-    else 
-    {
-    throw new HttpException('Not Found', HttpStatus.NOT_FOUND);
+    async findOne(logindata: loginDTO): Promise<any> {
+        return await this.customerRepo.findOneBy({ email: logindata.email });
+    }
+    async getAllCustomer(): Promise<CustomerEntity[]> {
+        return await this.customerRepo.find();
+    }
+    async findOneByUsername(username: string): Promise<CustomerEntity> {
+        return this.customerRepo.findOne({
+            where: { username: username },
+        });
+    }
+    async showProfile(username: string): Promise<CustomerEntity> {
+        return await this.customerRepo.findOneBy({ username: username });
     }
 
-  }
-  
 
-    async updateCustomer(email: string, data: UpdateCustomerDTO): Promise<CustomerEntity> {
-      await this.customerRepo.update({ email: email }, data);
-      return this.customerRepo.findOneBy({ id: data.id });
-      
-  }
-
-    async updateCustomerById(id: number, data: UpdateCustomerDTO): Promise<CustomerEntity> {
-      await this.customerRepo.update(id, data);
-      return this.customerRepo.findOneBy({ id });  
-  }
-
-  deleteCustomerByID(id):any {
-    return this.customerRepo.delete(id);
-  }
-
-  async deleteCustomer(id: number): Promise<CustomerEntity[]> {
-      await this.customerRepo.delete(id);
-    return this.customerRepo.find();
-    //  return `Customer with ID ${id} deleted successfully`; 
-  }
-
-  //new Code from here
-
-  async signup(data: CreateCustomerDto): Promise<CustomerEntity> {
-    const salt = await bcrypt.genSalt();
-    data.password = await bcrypt.hash(data.password, salt);
-    return this.customerRepo.save(data);
-  }
-  
-  async signin(mydto:LoginCustomerDTO):Promise<boolean>{
-    if (mydto.email != null && mydto.password != null) {
-        const mydata = await this.customerRepo.findOneBy({ email: mydto.email });
-        const isMatch = await bcrypt.compare(mydto.password, mydata.password);
-        if (isMatch) {
-            return true;
-        }
-        else {
-            return false;
-        }
-    } else {
-        return false;
+    async updateOrder(id: number, customerDTO: CustomerDTO): Promise<CustomerEntity> {
+        await this.customerRepo.update(id, customerDTO);
+        return this.getOrderById(id);
     }
-  }
-  
-  //auth code here
-  async register(customerObject: CreateCustomerDto): Promise<GetCustomerDTO> {
-    const { password, ...response } =
-      await this.customerRepo.save(customerObject);
-    return response;
-  }
+    async getOrderById(id: number): Promise<CustomerEntity> {
+        const idString = id.toString();
+        return this.customerRepo.findOneBy({ customerId: idString });
+    }
+    async remove(id: number): Promise<void> {
+        await this.customerRepo.delete(id);
+    }
+    getOrderByNameAndId(name, id): object {
+        console.log(id, name);
+        return { message: "your id is " + id + " and your name is " + name };
+    }
 
-  async login(loginData: LoginCustomerDTO): Promise<any> {
-    return await this.customerRepo.findOneBy({ email: loginData.email });
-  }
-
-  //semd mail
-  sendMail() : void {
+    //semd mail
+    sendMail() : void {
     this.mailerService.sendMail({
-      to: 'albarhossain@gmail.com', 
-      from: 'solemates.bd.2024@gmail.com', 
-      subject: 'Welcome to Bangladesh\'s premier sneaker marketplace',
-      text: 'Welcome', 
-      html: '<b>Welcome User, Thank You for signing up.</b>', 
+    to: 'albarhossain@gmail.com', 
+    from: 'solemates.bd.2024@gmail.com', 
+    subject: 'Welcome to Bangladesh\'s premier sneaker marketplace',
+    text: 'Welcome', 
+    html: '<b>Welcome User, Thank You for signing up.</b>', 
     })
-  }
-
-  getCustomerById(id: number): object{
-    return {message: "Customer id:  "+id };
-    }
-    getCustomerByNameAndId(name: string, id: number): object{
-    return {message: "Customer name: "+name+" id:"+ id};
-    }
-    getCustomer(myobj:object): object{
-    return myobj;
-  }
-
-  //Show all customer from DB NOT WORKING
-  getAllCustomer(): Promise<CustomerEntity[]> {
-    return this.customerRepo.find();
-  }
-
-  getCustomerByIdDB(id: number): Promise<CustomerEntity> {
-    return this.customerRepo.findOneBy({ id: id });
-  }
-
-
-  async updateCustomerByIdDB(id: number, updateCustomer: CustomerEntity): Promise<CustomerEntity> {
-    await this.customerRepo.update(id, updateCustomer);
-    return this.customerRepo.findOneBy({ id: id });
-  }
-
-  // async deleteCustomer(id: number): Promise<string> {
-  //   await this.customerRepo.delete(id);
-  //   return `Customer with ID ${id} deleted successfully`; 
-  // }
-
-    
-    // updateCustomer(myobj:object, id: number): object{
-    // return {message: "update customerid: "+id, body:myobj}
-    // }
-    async addAdmin(myobj: CustomerEntity): Promise<CustomerEntity> {
-      return await this.customerRepo.save(myobj);
-  }
 }
 
+    async search(logindata: loginDTO): Promise<CustomerEntity> {
+        return await this.customerRepo.findOneBy({ email: logindata.email });
+    }
+
+    //DB Find
+    async findByFullName(substring: string): Promise<CustomerEntity[]> {
+        return this.customerRepo.find({
+            where: { name: Like(`%${substring}%`) },
+        });
+    }
+
+    async findOneByCustomerUsername(username: string): Promise<CustomerEntity> {
+        return this.customerRepo.findOne({
+            where: { username: username },
+        });
+    }
+ 
+    //
+    async getCustomerByID(id) {
+        const data=await this.customerRepo.findOneBy({ customerId: id });
+        console.log(data);
+        if(data!==null) {
+            return data;
+        }
+        else 
+        {
+        throw new HttpException('Not Found', HttpStatus.NOT_FOUND);
+        }
+    
+    }
+    
+    async updateCustomerById(id: string, data: UpdateCustomerDTO): Promise<CustomerEntity> {
+        await this.customerRepo.update(id, data);
+        return this.customerRepo.findOneBy({ customerId: id });  
+    }
+
+}

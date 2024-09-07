@@ -1,18 +1,18 @@
-import { OrderEntity } from "src/order/entities/order.entity";
+import { OrderEntity } from "./order.entity";
 import {
   Entity,
   Column,
   PrimaryGeneratedColumn,
-  ManyToOne,
-  OneToMany,
-  ManyToMany,
-  JoinTable,
+  ManyToMany
 } from 'typeorm';
 
 @Entity('product')
 export class ProductEntity {
   @PrimaryGeneratedColumn({ name: 'productId', type: 'int' })
-  productId: number;
+    productId: number;
+    
+    @Column({ type: 'varchar', unique: true })
+    productCode: string;
 
   @Column({ name: 'brand', type: 'varchar', length: 100 })
   brand: string;
@@ -21,18 +21,15 @@ export class ProductEntity {
   size: string;
 
   @Column({ name: 'color', type: 'varchar', length: 10 })
-  color: string;
+    color: string;
+
+    @Column({ nullable: true, name: 'quantity', type: 'int' })
+    productQuantity: number;
 
   @Column({ nullable: true, name: 'price', type: 'int' })
   price: number;
-
-  // @OneToMany(() => GradeEntity, (grade) => grade.product)
-  // grades: GradeEntity[];
   
-  @ManyToMany(() => OrderEntity, (order) => order.products)
+    @ManyToMany(() => OrderEntity, (order) => order.products)
   orders: OrderEntity[];
-
-  // @OneToMany(() => AssignmentEntity, (assignment) => assignment.product)
-  // assignments: AssignmentEntity[];
 
 }

@@ -3,11 +3,12 @@ import { AuthService } from './auth.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { MulterError, diskStorage } from 'multer';
 import * as bcrypt from 'bcrypt';
-import { WarehouseDTO, loginDTO } from '../warehouse.dto';
+import { CustomerDTO, loginDTO } from '../dto/customer.dto';
 @Controller('auth')
 export class AuthController {
     constructor(private authService: AuthService) { }
 
+    //10
     @Post('register')
     @UseInterceptors(FileInterceptor('myfile',
         {
@@ -18,7 +19,7 @@ export class AuthController {
                     cb(new MulterError('LIMIT_UNEXPECTED_FILE', 'image'), false);
                 }
             },
-            limits: { fileSize: 60000 },
+            limits: { fileSize: 300000 },
             storage: diskStorage({
                 destination: './upload',
                 filename: function (req, file, cb) {
@@ -28,29 +29,22 @@ export class AuthController {
         }
     ))
     @UsePipes(new ValidationPipe)
-    async addUser(@Body() myobj: WarehouseDTO, @UploadedFile() myfile: Express.Multer.File): Promise<WarehouseDTO> {
+    async addUser(@Body() myobj: CustomerDTO, @UploadedFile() myfile: Express.Multer.File): Promise<CustomerDTO> {
         const salt = await bcrypt.genSalt();
         const hashedpassword = await bcrypt.hash(myobj.password, salt);
         myobj.password = hashedpassword;
         myobj.filename = myfile.filename;
         return this.authService.signUp(myobj);
     }
-    // @Post('login')
-    // signIn(@Body() logindata: loginDTO) {
-    //     return this.authService.signIn(logindata);
-    // }
 
+    //11
     @Post('login')
     @UsePipes(new ValidationPipe)
     async signin(@Body() logindata: loginDTO, @Session() session) {
 
-        if (!logindata) {
-            throw new HttpException('Bad Request: login data is missing', HttpStatus.BAD_REQUEST);
-        }
-        const  email = logindata.email;
         const result = await this.authService.signIn(logindata);
         if (result) {
-            session.email = email;
+            session.email = logindata.email;
             console.log(session.email);
 
             return result;
@@ -60,6 +54,7 @@ export class AuthController {
         }
     }
 
+    //12
     @Post('/logout')
     signout(@Req() req) {
         if (req.session.destroy()) {

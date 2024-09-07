@@ -1,152 +1,133 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe, UsePipes, ValidationPipe, UseInterceptors, UploadedFile, Res, Query, Put, DefaultValuePipe, ParseFilePipe, MaxFileSizeValidator, FileTypeValidator, Session, UnauthorizedException, HttpException, HttpStatus } from '@nestjs/common';
-import { CustomerService } from './customer.service';
-import { FileInterceptor } from '@nestjs/platform-express';
-import { diskStorage, MulterError } from 'multer';
-import { CreateCustomerDto,LoginCustomerDTO,UpdateCustomerDTO,GetCustomerDTO} from './dto/cutomer.dto';
-import { CustomerEntity } from './entities/customer.entity';
+import { Body, Controller, Delete, Get, HttpException, HttpStatus, InternalServerErrorException, Param, ParseIntPipe, Post, Put, Query, Req, Res, Session, UploadedFile, UseGuards, UseInterceptors, UsePipes, ValidationPipe } from "@nestjs/common";
+import { CustomerService } from "./customer.service";
+import { AuthGuard } from "./Auth/auth.guard";
+import { FileInterceptor } from "@nestjs/platform-express";
+import { MulterError, diskStorage } from "multer";
+import { CustomerDTO, UpdateCustomerDTO } from "../Customer/dto/customer.dto";
+import { CustomerEntity } from "../Customer/entities/customer.entity";
+import { SessionGuard } from "./session.guard";
+
 
 @Controller('customer')
 export class CustomerController {
-  constructor(private readonly customerService: CustomerService) {}
+
+    constructor(private readonly customerService: CustomerService) {}
 
     //Send mail
+    //1
+    @UseGuards(SessionGuard)
     @Get('/email')
     sendMail(): void {
-      return this.customerService.sendMail();
-  }
+    return this.customerService.sendMail();
+    }
 
-
-  @Get('/index')
-  getCustomerall(): any {
-    return this.customerService.getIndex();
-  }
-
-  @Get('/findcustomer/:id')
-  async getCustomerByID(@Param('id', ParseIntPipe) id: number): Promise<CustomerEntity> {
-    const res = await this.customerService.getCustomerByID(id);
-        if (res !== null) {
-            return await this.customerService.getCustomerByID(id);
+    //2
+    @UseGuards(SessionGuard)
+    @Get('/dashboard')
+    getcustomer(): object {
+        try {
+            return this.customerService.getAllCustomer();
         }
-        else {
-            throw new HttpException("Customer not found", HttpStatus.NOT_FOUND);
+        catch {
+            return { error: 'invalid' };
         }
-  }
+    }
 
+    //3
+    @UseGuards(SessionGuard)
+    @Get('/viewprofile')
+    showProfile(@Session() session): object {
+        try {
+            return this.customerService.showProfile(session.username);
+        }
+        catch {
+            throw new InternalServerErrorException("Failed to show profile");
+        }
+    }
 
-  
+    //4
+    @UseGuards(SessionGuard)
+    @Put('/update/:id')
+    updateUsersById(@Param('id') id: number): object {
+        try {
+            return this.customerService.remove(id);
+        } catch {
+            throw new InternalServerErrorException("Failed to update profile");
+        }
+    }
 
-  @Put('/updatecustomer/:id')
+    //5
+    @UseGuards(SessionGuard)
+    @Get('/findcustomer/:id')
+    async getCustomerByID(@Param('id', ParseIntPipe) id: number): Promise<CustomerEntity> {
+      const res = await this.customerService.getCustomerByID(id);
+          if (res !== null) {
+              return await this.customerService.getCustomerByID(id);
+          }
+          else {
+              throw new HttpException("Customer not found", HttpStatus.NOT_FOUND);
+          }
+    }
+
+    //6
+    @Put('/updatecustomer/:id')
     @UsePipes(new ValidationPipe())
-    updateCustomerbyID(@Param('id') id: number, @Body() data:UpdateCustomerDTO ): object {
+    updateCustomerbyID(@Param('id') id: string, @Body() data:UpdateCustomerDTO ): object {
         return this.customerService.updateCustomerById(id, data);
     }
-    
 
+    //5
+    @UseGuards(SessionGuard)
+    @Delete('/delete/:id')
+    deleteUserbyId(@Param('id') id: number): object {
+        try {
+            return this.customerService.remove(id);
 
-  @Delete('/deletecustomer/:id')
-  deleteCustomerbyid(@Param('id', ParseIntPipe) id: number): any {
-    return this.customerService.deleteCustomerByID(id);
-  }
-
-  
-    @Get('/getimage/:name')
-    getImages(@Param('name') name, @Res() res) {
-      res.sendFile(name,{ root: './uploads' })
+        } catch {
+            throw new InternalServerErrorException("Failed to delete profile");
+        }
     }
-    
-  @Get('get/:id')
-  getCustomerById(@Param('id', ParseIntPipe) id: number): object {
-    console.log(typeof (id));
-    return this.customerService.getCustomerById(id);
-  }
-
-  @Get('get/bynameandid')
-  getCustomerByNameAndId(@Query('name') name: string, @Query('id') id: number): object {
-    return this.customerService.getCustomerByNameAndId(name, id);
-  }
-
-  @Get('getcustomer')
-  getCustomer(@Body() myobj:object): object {
-    console.log(myobj);
-return this.customerService.getCustomer(myobj);
-  }
-
-  // @Put('updatecustomer/:id')
-  // updateCustomer(@Body() myobj:CustomerUpdateDTO, @Param('id') id:number): object {
-  //   return this.customerService.updateCustomer(myobj,id)
-  // }
-
-  //Database part
-
-  @Get('getAllCustomer')
-  getAllCustomer(): Promise<CustomerEntity[]> {
-    return this.customerService.getAllCustomer();
-  }
 
 
+    //6
+    @UseGuards(SessionGuard)
+    @Get('/order')
+    getOrderByNameAndId(@Query('name') name: string, @Query('id') id: string): object {
+        try {
+            return this.customerService.getOrderByNameAndId(name, id);
+
+        } catch {
+            throw new InternalServerErrorException("Failed to show order");
+        }
+    }
+
+    //7
+    @UseGuards(SessionGuard)
+    @Get('/getimage/:name')
+    getImages(@Param('name') name: string, @Res() res) {
+        res.sendFile(name, { root: './upload' })
+    }
 
 
-@Get('/getimage/:name')
-getImage(@Param('name') filename:string, @Res() res) {
-res.sendFile(filename,{ root: './uploads' })
-}
+    //8
+    @UseGuards(SessionGuard)
+    @Get('fullname/:substring')
+    async getUserBySubString(@Param('substring') substring: string): Promise<CustomerEntity[]> {
+        
 
+        try {
+            return this.customerService.findByFullName(substring);
 
-  //Newer code here
-  
-  @Post('/signup')
-@UseInterceptors(FileInterceptor('filename',
-{storage:diskStorage({
-  destination: './uploads',
-  filename: function (req, file, cb) {
-    cb(null,Date.now()+file.originalname)
-  }
-})
+        } catch {
+            throw new InternalServerErrorException("Customer name does not exist.");
+        }
+    }
 
-}))
-signup(@Body() mydto:CreateCustomerDto,@UploadedFile(  new ParseFilePipe({
-  validators: [
-    new MaxFileSizeValidator({ maxSize: 16000000}),
-    new FileTypeValidator({ fileType: 'png|jpg|jpeg|' }),
-  ],
-}),) file: Express.Multer.File){
+    //9
+    @UseGuards(SessionGuard)
+    @Get('usernames/:usernames')
+    async getUserByUsername(@Param('username') username: string): Promise<CustomerEntity> {
+        return this.customerService.findOneByUsername(username);
+    }
 
-mydto.filename = file.filename;  
-
-return this.customerService.signup(mydto);
-
-}
-
-@Post('/signin')
-@UsePipes(new ValidationPipe())
-async signin(@Session() session, @Body() mydto:LoginCustomerDTO)
-{
-  const res = await (this.customerService.signin(mydto));
-if(res==true)
-{
-session.email = mydto.email;
-return (session.email);
-}
-else
-{
-throw new UnauthorizedException({ message: "invalid credentials" });
-}
-  }
-
-  @Get('/signout')
-signout(@Session() session)
-{
-  if(session.destroy())
-  {
-    return {message:"you are logged out"};
-  }
-  else
-  {
-    throw new UnauthorizedException("invalid actions");
-  }
-}
-  
-
-  
-  
-}
+};

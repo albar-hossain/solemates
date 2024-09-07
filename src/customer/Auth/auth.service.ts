@@ -1,20 +1,22 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
-import { WarehouseService } from '../warehouse.service';
-import { WarehouseDTO, loginDTO } from '../warehouse.dto';
+import { CustomerService } from '../customer.service';
+import { CustomerDTO, loginDTO } from '../dto/customer.dto';
+import { CustomerEntity } from '../entities/customer.entity';
 
 @Injectable()
 export class AuthService {
     constructor(
-        private warehouseService: WarehouseService,
+        private customerService: CustomerService,
         private jwtService: JwtService
     ) { }
-    async signUp(myobj: WarehouseDTO): Promise<WarehouseDTO> {
-        return await this.warehouseService.addAdmin(myobj);
+    async signUp(myobj: CustomerDTO): Promise<CustomerDTO> {
+        return await this.customerService.addCustomer(myobj);
     }
+
     async signIn(logindata: loginDTO): Promise<{ access_token: string }> {
-        const user = await this.warehouseService.findOne(logindata);
+        const user = await this.customerService.findOne(logindata);
         if (!user) {
             throw new Error('User not found');
         }
@@ -27,14 +29,4 @@ export class AuthService {
             access_token: await this.jwtService.signAsync(payload),
         };
     }
-    // async login(logindata: loginDTO) {
-    //     const staff = await this.warehouseService.search(logindata);
-    //     const result = await bcrypt.compare(logindata.password, staff.password);
-    //     if (result) {
-    //         return true;
-    //     }
-    //     else {
-    //         return false;
-    //     }
-    // }
 }
