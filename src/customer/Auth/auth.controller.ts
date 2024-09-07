@@ -13,13 +13,13 @@ export class AuthController {
     @UseInterceptors(FileInterceptor('myfile',
         {
             fileFilter: (req, file, cb) => {
-                if (file.originalname.match(/^.*\.(jpg|webp|png|jpeg)$/))
+                if (file.originalname.match(/^.*\.(jpg|webp|png|jpeg|gif)$/))
                     cb(null, true);
                 else {
                     cb(new MulterError('LIMIT_UNEXPECTED_FILE', 'image'), false);
                 }
             },
-            limits: { fileSize: 300000 },
+            limits: { fileSize: 1200000 },
             storage: diskStorage({
                 destination: './upload',
                 filename: function (req, file, cb) {
